@@ -67,6 +67,7 @@ func enableCiliumEndpointSyncGC(once bool) {
 		// state.
 		watchers.PodsInit(k8s.WatcherCli(), stopCh)
 	}
+	<-k8sCiliumNodesCacheSynced
 
 	// this dummy manager is needed only to add this controller to the global list
 	controller.NewManager().UpdateController(controllerName,
@@ -90,17 +91,41 @@ func enableCiliumEndpointSyncGC(once bool) {
 					// will delete all CEPs in the cluster regardless of the pod
 					// state therefore we won't even watch for the pod store.
 					if !once {
-						podObj, exists, err := watchers.PodStore.GetByKey(cepFullName)
-						if err != nil {
-							scopedLog.WithError(err).Warn("Unable to get pod from store")
-							continue
+						var podObj interface{}
+						var err error
+						exists := false
+						podChecked := false
+						for _, owner := range cep.ObjectMeta.OwnerReferences {
+							switch owner.Kind {
+							case "Pod":
+								podObj, exists, err = watchers.PodStore.GetByKey(cepFullName)
+								if err != nil {
+									scopedLog.WithError(err).Warn("Unable to get pod from store")
+								}
+								podChecked = true
+							case "CiliumNode":
+								podObj, exists, err = CiliumNodeStore.GetByKey(owner.Name)
+								if err != nil {
+									scopedLog.WithError(err).Warn("Unable to get CiliumNode from store")
+								}
+							}
+							// Stop looking when an existing owner has been found
+							if exists {
+								break
+							}
+						}
+						if !exists && !podChecked {
+							// Check for a Pod in case none of the owners existed
+							// This keeps the old behavior even if OwnerReferences are missing
+							podObj, exists, err = watchers.PodStore.GetByKey(cepFullName)
+							if err != nil {
+								scopedLog.WithError(err).Warn("Unable to get pod from store")
+							}
 						}
 						if exists {
-							pod := podObj.(*slim_corev1.Pod)
+							pod, ok := podObj.(*slim_corev1.Pod)
 							if !ok {
-								log.WithField(logfields.Object, podObj).
-									Errorf("Saw %T object while expecting *slim_corev1.Pod", podObj)
-								continue
+								continue // No additional checking for non-Pods
 							}
 							// In Kubernetes Jobs, Pods can be left in Kubernetes until the Job
 							// is deleted. If the Job is never deleted, Cilium will never receive a Pod
