@@ -1471,7 +1471,7 @@ func runDaemon() {
 
 	bootstrapStats.overall.End(true)
 	bootstrapStats.updateMetrics()
-	d.launchHubble()
+	go d.launchHubble()
 
 	select {
 	case err := <-metricsErrs:
