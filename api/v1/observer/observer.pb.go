@@ -214,7 +214,6 @@ type ICMPv6 = flow.ICMPv6
 type EventTypeFilter = flow.EventTypeFilter
 type CiliumEventType = flow.CiliumEventType
 type FlowFilter = flow.FlowFilter
-type Payload = flow.Payload
 type DNS = flow.DNS
 type HTTPHeader = flow.HTTPHeader
 type HTTP = flow.HTTP
