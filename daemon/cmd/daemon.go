@@ -50,7 +50,9 @@ import (
 	ipamOption "github.com/cilium/cilium/pkg/ipam/option"
 	"github.com/cilium/cilium/pkg/ipcache"
 	"github.com/cilium/cilium/pkg/k8s"
+	k8sConst "github.com/cilium/cilium/pkg/k8s/apis/cilium.io"
 	"github.com/cilium/cilium/pkg/k8s/watchers"
+	"github.com/cilium/cilium/pkg/labels"
 	"github.com/cilium/cilium/pkg/lock"
 	"github.com/cilium/cilium/pkg/logging"
 	"github.com/cilium/cilium/pkg/logging/logfields"
@@ -466,6 +468,13 @@ func NewDaemon(ctx context.Context, epMgr *endpointmanager.EndpointManager, dp d
 		}
 
 		bootstrapStats.k8sInit.End(true)
+	} else if option.Config.JoinK8sNamespace != "" {
+		agentLabels := labels.NewLabelsFromModel(option.Config.AgentLabels).K8sStringMap()
+		agentLabels[k8sConst.PodNamespaceLabel] = option.Config.JoinK8sNamespace
+		agentLabels[k8sConst.PodNameLabel] = nodeTypes.GetName()
+		agentLabels[k8sConst.PolicyLabelCluster] = option.Config.ClusterName
+		// Set configured agent labels to to local node when not running k8s
+		node.SetLabels(agentLabels)
 	}
 
 	// Perform an early probe on the underlying kernel on whether BandwidthManager
@@ -581,6 +590,15 @@ func NewDaemon(ctx context.Context, epMgr *endpointmanager.EndpointManager, dp d
 		bootstrapStats.k8sInit.End(true)
 	} else if !option.Config.AnnotateK8sNode {
 		log.Debug("Annotate k8s node is disabled.")
+	}
+
+	// Must init kvstore before starting node discovery
+	if option.Config.KVStore == "" {
+		log.Info("Skipping kvstore configuration")
+	} else {
+		bootstrapStats.kvstore.Start()
+		d.initKVStore()
+		bootstrapStats.kvstore.End(true)
 	}
 
 	d.nodeDiscovery.StartDiscovery(nodeTypes.GetName())

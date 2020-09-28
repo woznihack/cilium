@@ -456,6 +456,9 @@ func init() {
 	flags.String(option.K8sNamespaceName, "", "Name of the Kubernetes namespace in which Cilium is deployed in")
 	option.BindEnv(option.K8sNamespaceName)
 
+	flags.String(option.JoinK8sNamespaceName, "", "Name of the Kubernetes namespace join via kvstore registration")
+	option.BindEnv(option.JoinK8sNamespaceName)
+
 	flags.Bool(option.K8sRequireIPv4PodCIDRName, false, "Require IPv4 PodCIDR to be specified in node resource")
 	option.BindEnv(option.K8sRequireIPv4PodCIDRName)
 
@@ -1355,14 +1358,6 @@ func runDaemon() {
 	gc.Enable(option.Config.EnableIPv4, option.Config.EnableIPv6,
 		restoredEndpoints.restored, d.endpointManager)
 	bootstrapStats.enableConntrack.End(true)
-
-	if option.Config.KVStore == "" {
-		log.Info("Skipping kvstore configuration")
-	} else {
-		bootstrapStats.kvstore.Start()
-		d.initKVStore()
-		bootstrapStats.kvstore.End(true)
-	}
 
 	bootstrapStats.k8sInit.Start()
 	// Wait only for certain caches, but not all!
