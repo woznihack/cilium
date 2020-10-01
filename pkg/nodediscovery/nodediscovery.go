@@ -181,7 +181,7 @@ func (n *NodeDiscovery) StartDiscovery(nodeName string) {
 		close(n.Registered)
 	}()
 
-	if option.Config.JoinK8sNamespace != "" {
+	if option.Config.JoinCluster {
 		// Wait for successful node registration before
 		// informing the manager if registering to a k8s
 		// namespace as it can update node information

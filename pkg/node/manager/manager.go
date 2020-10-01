@@ -349,7 +349,7 @@ func (m *Manager) NodeUpdated(n nodeTypes.Node) {
 		// through the tunnel to preserve the source identity as part of the
 		// encapsulation.
 		if address.Type == addressing.NodeCiliumInternalIP || m.conf.NodeEncryptionEnabled() ||
-			option.Config.EnableHostFirewall || option.Config.JoinK8sNamespace != "" {
+			option.Config.EnableHostFirewall || option.Config.JoinCluster {
 			tunnelIP = nodeIP
 		}
 

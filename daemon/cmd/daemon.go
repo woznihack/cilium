@@ -468,12 +468,22 @@ func NewDaemon(ctx context.Context, epMgr *endpointmanager.EndpointManager, dp d
 		}
 
 		bootstrapStats.k8sInit.End(true)
-	} else if option.Config.JoinK8sNamespace != "" {
+	}
+
+	if option.Config.JoinCluster {
+		if k8s.IsEnabled() {
+			log.Fatalf("Cannot join a Cilium cluster (--%s) when configured as a Kubernetes node", option.JoinClusterName)
+		}
+		if option.Config.KVStore == "" {
+			log.Fatalf("Joining a Cilium cluster (--%s) requires kvstore (--%s) be set", option.JoinClusterName, option.KVStore)
+		}
 		agentLabels := labels.NewLabelsFromModel(option.Config.AgentLabels).K8sStringMap()
-		agentLabels[k8sConst.PodNamespaceLabel] = option.Config.JoinK8sNamespace
+		if option.Config.K8sNamespace != "" {
+			agentLabels[k8sConst.PodNamespaceLabel] = option.Config.K8sNamespace
+		}
 		agentLabels[k8sConst.PodNameLabel] = nodeTypes.GetName()
 		agentLabels[k8sConst.PolicyLabelCluster] = option.Config.ClusterName
-		// Set configured agent labels to local node when not running k8s
+		// Set configured agent labels to local node for node registration
 		node.SetLabels(agentLabels)
 	}
 

@@ -146,7 +146,7 @@ func (nr *NodeRegistrar) RegisterNode(n *nodeTypes.Node, manager NodeManager) er
 	}
 
 	var registerStore *store.SharedStore
-	if option.Config.JoinK8sNamespace != "" {
+	if option.Config.JoinCluster {
 		nodeId := make(chan uint32, 1)
 
 		// Join the shared store for node registrations

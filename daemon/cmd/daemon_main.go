@@ -456,8 +456,8 @@ func init() {
 	flags.String(option.K8sNamespaceName, "", "Name of the Kubernetes namespace in which Cilium is deployed in")
 	option.BindEnv(option.K8sNamespaceName)
 
-	flags.String(option.JoinK8sNamespaceName, "", "Name of the Kubernetes namespace join via kvstore registration")
-	option.BindEnv(option.JoinK8sNamespaceName)
+	flags.Bool(option.JoinClusterName, false, "Join a Cilium cluster via kvstore registration")
+	option.BindEnv(option.JoinClusterName)
 
 	flags.Bool(option.K8sRequireIPv4PodCIDRName, false, "Require IPv4 PodCIDR to be specified in node resource")
 	option.BindEnv(option.K8sRequireIPv4PodCIDRName)
