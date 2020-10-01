@@ -339,6 +339,11 @@ func onOperatorStartLeading(ctx context.Context) {
 			// set.
 			nm.Resync(context.Background(), time.Time{})
 		}
+	default:
+		if err := startSynchronizingCiliumNodes(apiextensionsK8sClient, NOPNodeManager); err != nil {
+			log.WithError(err).Fatal("Unable to start synchronizing Cilium nodes")
+		}
+		nodeManager = &NOPNodeManager
 	}
 
 	if kvstoreEnabled() {
