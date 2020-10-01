@@ -123,17 +123,22 @@ func enableCiliumEndpointSyncGC(once bool) {
 							}
 						}
 						if exists {
-							pod, ok := podObj.(*slim_corev1.Pod)
-							if !ok {
-								continue // No additional checking for non-Pods
-							}
-							// In Kubernetes Jobs, Pods can be left in Kubernetes until the Job
-							// is deleted. If the Job is never deleted, Cilium will never receive a Pod
-							// delete event, causing the IP to be left in the ipcache.
-							// For this reason we should delete the ipcache entries whenever the pod
-							// status is either PodFailed or PodSucceeded as it means the IP address
-							// is no longer in use.
-							if k8sUtils.IsPodRunning(pod.Status) {
+							switch pod := podObj.(type) {
+							case *slim_corev1.Node:
+								continue
+							case *slim_corev1.Pod:
+								// In Kubernetes Jobs, Pods can be left in Kubernetes until the Job
+								// is deleted. If the Job is never deleted, Cilium will never receive a Pod
+								// delete event, causing the IP to be left in the ipcache.
+								// For this reason we should delete the ipcache entries whenever the pod
+								// status is either PodFailed or PodSucceeded as it means the IP address
+								// is no longer in use.
+								if k8sUtils.IsPodRunning(pod.Status) {
+									continue
+								}
+							default:
+								log.WithField(logfields.Object, podObj).
+									Errorf("Saw %T object while expecting *slim_corev1.Pod", podObj)
 								continue
 							}
 						}
