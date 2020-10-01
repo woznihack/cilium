@@ -108,12 +108,13 @@ const (
 	ReservedCiliumEtcdOperator NumericIdentity = 107
 )
 
-var (
-	// localNodeMutex protects localNodeIdentity
-	localNodeMutex lock.Mutex
-	// localNodeIdentity is the endpoint identity allocated for the local node
-	localNodeIdentity = ReservedIdentityRemoteNode
-)
+// localNodeIdentity is the endpoint identity allocated for the local node
+var localNodeIdentity = struct {
+	lock.Mutex
+	identity NumericIdentity
+}{
+	identity: ReservedIdentityRemoteNode,
+}
 
 type wellKnownIdentities map[NumericIdentity]wellKnownIdentity
 
@@ -377,17 +378,17 @@ func (id NumericIdentity) Uint32() uint32 {
 // set in tunnel headers when encapsulating packets originating from the local
 // node.
 func GetLocalNodeID() NumericIdentity {
-	localNodeMutex.Lock()
-	defer localNodeMutex.Unlock()
-	return localNodeIdentity
+	localNodeIdentity.Lock()
+	defer localNodeIdentity.Unlock()
+	return localNodeIdentity.identity
 }
 
 // SetLocalNodeID sets the local node id.
 // Note that currently changes to the local node id only take effect during agent bootstrap
 func SetLocalNodeID(nodeid uint32) {
-	localNodeMutex.Lock()
-	defer localNodeMutex.Unlock()
-	localNodeIdentity = NumericIdentity(nodeid)
+	localNodeIdentity.Lock()
+	defer localNodeIdentity.Unlock()
+	localNodeIdentity.identity = NumericIdentity(nodeid)
 }
 
 func GetReservedID(name string) NumericIdentity {
