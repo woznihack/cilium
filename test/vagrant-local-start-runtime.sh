@@ -3,10 +3,17 @@
 set -e
 
 export K8S_VERSION=${K8S_VERSION:-1.19}
-export LOCAL_BOX=k8s-box
+
+echo "destroying runtime"
+vagrant destroy runtime --force 2>/dev/null
+
+if [ "$PRELOAD_VM" != "false" ]; then
+    ./vagrant-local-create-box.sh
+else
+    # Use defaults (see ../vagrant_box_defaults.rb)
+    unset SERVER_BOX
+    unset SERVER_VERSION
+fi
 
 echo "starting runtime vm"
-export SERVER_BOX=$LOCAL_BOX
-export SERVER_VERSION=0
-unset PRELOAD_VM
 vagrant up runtime --provision

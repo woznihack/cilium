@@ -66,8 +66,15 @@ setup for the Vagrantfile in the root of the Cilium tree depends on a number of
 environment variables and network setup that are managed via
 ``contrib/vagrant/start.sh``.
 
-Using the provided Vagrantfile
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Using the provided Vagrantfiles
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. note::
+
+   Vagrantfiles assume that the name of your Cilium directory is
+   ``cilium``. This allows mounting of the parent directory to the VMs,
+   so that in addition to your Cilium repo, all the other repos you have
+   in the same parent directory are also mounted.
 
 To bring up a Vagrant VM  with Cilium
 plus dependencies installed, run:
@@ -87,6 +94,36 @@ existing cluster. For example, to add a net-next VM to a one-node cluster:
 The box is currently available for the following providers:
 
 * virtualbox
+
+The ``test`` directory also contains a ``Vagrantfile`` that can be
+used to bring up the CI VM images that will cache a Vagrant box
+locally (in ``test/.vagrant/`` that prepulls all the docker images
+needed for the CI tests.
+
+To start a local k8s 1.18 cluster with one CI VM locally, run:
+
+::
+    $ cd test
+    $ K8S_VERSION=1.18 K8S_NODES=1 ./vagrant-local-start.sh
+
+This will first destroy any CI VMs you may have running on the current
+``K8S_VERSION``, and then create a local Vagrant box if not already
+created. This can take some time.
+
+VM preloading can be turned off by exporting ``VM_PRELOAD=false``. You
+can run ``make clean`` in ``tests`` to delete the cached vagrant box.
+
+To start the CI runtime VM locally, run:
+
+::
+    $ cd test
+    $ ./vagrant-local-start-runtime.sh
+
+The runtime VM is connected to the same private VirtualBox network as
+the local CI k8s nodes.
+
+The runtime VM uses the same cached box as the k8s nodes, but does not start
+K8s, but runs Cilium as a systemd service.
 
 Options
 ^^^^^^^
