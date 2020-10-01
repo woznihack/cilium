@@ -335,8 +335,9 @@ func (m *Manager) NodeUpdated(n nodeTypes.Node) {
 
 	remoteHostIdentity := identity.ReservedIdentityHost
 	if m.conf.RemoteNodeIdentitiesEnabled() {
-		if n.NodeIdentity != 0 {
-			remoteHostIdentity = identity.NumericIdentity(n.NodeIdentity)
+		nid := identity.NumericIdentity(n.NodeIdentity)
+		if nid != identity.IdentityUnknown {
+			remoteHostIdentity = nid
 		} else if n.Source != source.Local {
 			remoteHostIdentity = identity.ReservedIdentityRemoteNode
 		}

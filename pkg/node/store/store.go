@@ -37,8 +37,7 @@ var (
 	NodeStorePrefix = path.Join(kvstore.BaseKeyPrefix, "state", "nodes", "v1")
 
 	// NodeRegisterStorePrefix is the kvstore prefix of the shared
-	// store for node registration that will be followed by k8s
-	// namespace name depending on agent's --k8s-namespace option
+	// store for node registration
 	//
 	// WARNING - STABLE API: Changing the structure or values of this will
 	// break backwards compatibility
@@ -99,6 +98,8 @@ type NodeRegistrar struct {
 	registerStore *store.SharedStore
 }
 
+// RegisterObserver implements the store.Observer interface and sends
+// named node's identity updates on a channel.
 type RegisterObserver struct {
 	name   string
 	idChan chan uint32
@@ -173,7 +174,7 @@ func (nr *NodeRegistrar) RegisterNode(n *nodeTypes.Node, manager NodeManager) er
 			case <-time.After(defaults.NodeInitTimeout / 10):
 				registerStore.Release()
 				nodeStore.Release()
-				return fmt.Errorf("Timed out waiting for node identity")
+				return fmt.Errorf("timed out waiting for node identity")
 			}
 		}
 	} else {
