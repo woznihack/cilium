@@ -15,8 +15,8 @@
 package main
 
 import (
-        "context"
-        "time"
+	"context"
+	"time"
 
 	"github.com/cilium/cilium/pkg/ipam/allocator"
 	v2 "github.com/cilium/cilium/pkg/k8s/apis/cilium.io/v2"
@@ -30,7 +30,7 @@ var (
 )
 
 // nopNodeManager is used for allocation types that need no node management.
-// This is needed to allow node watcher maintain a CiliumNodeStore for the
+// This is needed to allow node watcher maintain a CiliumNode store for the
 // use in CEP GC even when operator does not do anything for IPAM.
 type nopNodeManager struct{}
 
@@ -47,4 +47,3 @@ func (nm *nopNodeManager) Delete(nodeName string) {
 
 func (nm *nopNodeManager) Resync(context.Context, time.Time) {
 }
-

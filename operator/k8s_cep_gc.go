@@ -93,7 +93,7 @@ func doCiliumEndpointSyncGC(ctx context.Context, once bool, stopCh chan struct{}
 		scopedLog = scopedLog.WithFields(logrus.Fields{
 			logfields.K8sPodName: cepFullName,
 		})
-		
+
 		// If we are running this function "once" it means that we
 		// will delete all CEPs in the cluster regardless of the pod
 		// state therefore we won't even watch for the pod store.
@@ -111,7 +111,7 @@ func doCiliumEndpointSyncGC(ctx context.Context, once bool, stopCh chan struct{}
 					}
 					podChecked = true
 				case "CiliumNode":
-					podObj, exists, err = CiliumNodeStore.GetByKey(owner.Name)
+					podObj, exists, err = ciliumNodeStore.GetByKey(owner.Name)
 					if err != nil {
 						scopedLog.WithError(err).Warn("Unable to get CiliumNode from store")
 					}

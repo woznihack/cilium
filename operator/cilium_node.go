@@ -31,11 +31,11 @@ import (
 )
 
 var (
-	// CiliumNodeStore contains all CiliumNodes present in k8s.
+	// ciliumNodeStore contains all CiliumNodes present in k8s.
 	// Warning: The CiliumNodes stored in the cache are not intended to be
-	// used for Update operations in k8s as some of its fields were are not
+	// used for Update operations in k8s as some of its fields are not
 	// populated.
-	CiliumNodeStore cache.Store
+	ciliumNodeStore cache.Store
 
 	k8sCiliumNodesCacheSynced = make(chan struct{})
 )
@@ -49,7 +49,7 @@ func startSynchronizingCiliumNodes(apiextensionsK8sClient apiextensionsclientset
 	// CiliumNode resource, as the resource grows, we may want to consider
 	// introducing a slim version of it.
 	var ciliumNodeInformer cache.Controller
-	CiliumNodeStore, ciliumNodeInformer = informer.NewInformer(
+	ciliumNodeStore, ciliumNodeInformer = informer.NewInformer(
 		cache.NewListWatchFromClient(ciliumK8sClient.CiliumV2().RESTClient(),
 			v2.CNPluralName, v1.NamespaceAll, fields.Everything()),
 		&v2.CiliumNode{},
